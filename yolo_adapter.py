@@ -1,7 +1,4 @@
-"""Optional adapter for user-supplied local Ultralytics checkpoints.
-
-No competition weights are bundled. Install ultralytics separately if needed.
-"""
+"""Train or predict with a local Ultralytics checkpoint."""
 import argparse
 from pathlib import Path
 

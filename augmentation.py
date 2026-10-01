@@ -1,7 +1,4 @@
-"""Equipment-conditioned residual augmentation, distilled from KAMP research.
-
-Only procedural fixtures ship with this repository. Coordinates are (x, y).
-"""
+"""Equipment-conditioned residual augmentation. Coordinates are (x, y)."""
 from dataclasses import dataclass
 import numpy as np
 
@@ -20,7 +17,7 @@ CORE = RADIUS <= 2
 
 
 def fixture(seed: int, equipment: str, defects: int = 0) -> Sample:
-    """Procedural X-ray-like phantom; NOT a real industrial or medical image."""
+    """Generate a synthetic product image with labeled dark spots."""
     if equipment not in {"A", "B"}:
         raise ValueError("Unknown fixture equipment")
     rng = np.random.default_rng(seed)
@@ -48,10 +45,9 @@ def fixture(seed: int, equipment: str, defects: int = 0) -> Sample:
 
 
 def extract_bank(samples: list[Sample]) -> dict[str, list[np.ndarray]]:
-    """Build banks from TRAIN donors only; caller owns the split boundary.
+    """Extract dark cores using an annular background estimate.
 
-    Estimate local background from an annulus excluding every labeled defect,
-    then isolate the dark residual core. Never serialize real-data banks here.
+    Pass training samples only; the split is managed by the caller.
     """
     banks = {}
     for sample in samples:
@@ -76,11 +72,7 @@ def extract_bank(samples: list[Sample]) -> dict[str, list[np.ndarray]]:
 
 
 def augment(sample: Sample, banks: dict, seed: int, count: int = 2) -> Sample:
-    """Same-equipment donors, full patch inside product, separated centers.
-
-    The compact demo uses a known procedural product mask. The private research
-    pipeline estimates body/strip masks from images and uses trained detectors.
-    """
+    """Insert same-equipment residuals within the product mask, 20px apart."""
     if count < 0:
         raise ValueError("count must be non-negative")
     bank = banks.get(sample.equipment)
@@ -108,7 +100,7 @@ def augment(sample: Sample, banks: dict, seed: int, count: int = 2) -> Sample:
 
 
 def yolo_labels(sample: Sample, box_size: int = 7) -> str:
-    """Fixture boxes only; research uses equipment-specific training-box sizes."""
+    """Export fixed-size fixture boxes in YOLO format."""
     height, width = sample.image.shape
     return "".join(f"0 {(x+.5)/width:.6f} {(y+.5)/height:.6f} "
                    f"{box_size/width:.6f} {box_size/height:.6f}\n" for x, y in sample.centers)

@@ -1,14 +1,13 @@
-"""Standalone point-localization evaluator, not the official KAMP evaluator."""
+"""Local-contrast detection and confidence-ranked point matching."""
 import numpy as np
 
 
 def detect(image, threshold: float = 10., min_distance: int = 8):
-    """CPU local-contrast baseline. No learned weights, no ground-truth access."""
+    """Detect local dark spots without labels or learned weights."""
     image = image.astype(float)
     windows = np.lib.stride_tricks.sliding_window_view(np.pad(image, 4, mode="reflect"), (9, 9))
     score = windows.mean(axis=(-2, -1)) - image
-    # Image-derived foreground gating rejects the package/air boundary.
-    # Threshold 210 is fixture-specific, not calibrated on competition images.
+    # Reject the product boundary; 210 is specific to the synthetic fixtures.
     foreground = (windows < 210).all(axis=(-2, -1))
     y, x = np.where((score >= threshold) & foreground)
     order = np.argsort(-score[y, x], kind="stable")
@@ -21,11 +20,10 @@ def detect(image, threshold: float = 10., min_distance: int = 8):
 
 
 def evaluate(cases, radius: float = 3.):
-    """Confidence-ranked, greedy ONE-TO-ONE point matching within each image.
+    """Greedy one-to-one matching within each image, ordered by score.
 
-    AP is the all-points interpolated precision-recall area for the supplied
-    candidate list. It is point AP@3px, not COCO box mAP or a contest score.
-    Predictions below the detector's candidate threshold are absent from AP.
+    AP uses the interpolated precision-recall envelope of supplied candidates.
+    The default radius is 3px; this is point AP, not box mAP.
     """
     if radius <= 0 or not cases:
         raise ValueError("Positive radius and at least one case required")
