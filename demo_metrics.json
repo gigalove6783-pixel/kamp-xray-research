@@ -1,0 +1,44 @@
+{
+  "scope": "procedural fixtures; not KAMP benchmark results",
+  "seed": 2026,
+  "detector": "CPU local contrast; no learned weights",
+  "matching": "one-to-one point distance <= 3 pixels",
+  "candidate_threshold": 10.0,
+  "train_images": 12,
+  "donor_bank_sizes": {
+    "A": 12,
+    "B": 12
+  },
+  "aggregate": {
+    "images": 24,
+    "ground_truth": 24,
+    "predictions": 25,
+    "true_positive": 24,
+    "recall": 1.0,
+    "precision": 0.96,
+    "unmatched_per_image": 0.041666666666666664,
+    "point_ap_3px": 0.9999999999999999
+  },
+  "by_equipment": {
+    "A": {
+      "images": 12,
+      "ground_truth": 12,
+      "predictions": 12,
+      "true_positive": 12,
+      "recall": 1.0,
+      "precision": 1.0,
+      "unmatched_per_image": 0.0,
+      "point_ap_3px": 1.0
+    },
+    "B": {
+      "images": 12,
+      "ground_truth": 12,
+      "predictions": 13,
+      "true_positive": 12,
+      "recall": 1.0,
+      "precision": 0.9230769230769231,
+      "unmatched_per_image": 0.08333333333333333,
+      "point_ap_3px": 1.0
+    }
+  }
+}
