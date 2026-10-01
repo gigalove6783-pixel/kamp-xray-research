@@ -1,9 +1,8 @@
-"""Run: python demo.py --output runs/demo --seed 2026"""
+"""Generate synthetic data and evaluate point localization."""
 import argparse
 import json
 from pathlib import Path
 from PIL import Image, ImageDraw
-import numpy as np
 from augmentation import fixture, extract_bank, augment, yolo_labels
 from evaluation import detect, evaluate
 
@@ -38,7 +37,7 @@ def preview(before, after, predictions, path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=Path("runs/demo"))
+    parser.add_argument("--output", type=Path, default=Path("runs/example"))
     parser.add_argument("--seed", type=int, default=2026)
     args = parser.parse_args()
     root = args.output
@@ -48,7 +47,7 @@ def main():
     for i, donor in enumerate(donors):
         augmented = augment(donor, banks, args.seed+100+i, count=1)
         save_sample(root, "train", f"train_{i:03}", augmented)
-    # Independent fixture seeds, never included in the training donor banks.
+    # Validation seeds are disjoint from the donor seeds.
     all_cases = []
     per_equipment = {}
     for eq in ("A", "B"):
@@ -70,7 +69,7 @@ def main():
               "donor_bank_sizes": {k: len(v) for k, v in banks.items()},
               "aggregate": evaluate(all_cases), "by_equipment": per_equipment}
     (root / "metrics.json").write_text(json.dumps(result, indent=2)+"\n", encoding="utf-8")
-    # Relative path keeps the generated dataset portable; pass its resolved YAML to YOLO.
+    # The adapter resolves these paths relative to this YAML file.
     (root / "dataset.yaml").write_text(
         "train: images/train\nval: images/val\nnames:\n  0: foreign_object\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
